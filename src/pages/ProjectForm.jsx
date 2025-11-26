@@ -92,13 +92,13 @@ const ProjectForm = () => {
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
           {isEdit ? 'Редактировать проект' : 'Создать новый проект'}
         </h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-6">
         {/* Основная информация */}
         <div>
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Основная информация</h3>
@@ -369,7 +369,7 @@ const ProjectForm = () => {
         {/* Инфраструктура */}
         <div>
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Инфраструктура</h3>
-          <div className="flex space-x-2 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
             <input
               type="text"
               value={newFeature}
@@ -381,7 +381,7 @@ const ProjectForm = () => {
             <button
               type="button"
               onClick={handleAddFeature}
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition whitespace-nowrap"
             >
               Добавить
             </button>
@@ -406,17 +406,17 @@ const ProjectForm = () => {
         </div>
 
         {/* Кнопки */}
-        <div className="flex justify-end space-x-3 pt-4 border-t">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+            className="w-full sm:w-auto px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
           >
             Отмена
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-medium"
+            className="w-full sm:w-auto px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-medium"
           >
             {isEdit ? 'Сохранить изменения' : 'Создать проект'}
           </button>
