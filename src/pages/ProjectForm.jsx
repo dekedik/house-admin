@@ -10,6 +10,7 @@ const ProjectForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     district: '',
+    type: '',
     description: '',
     fullDescription: '',
     price: '',
@@ -87,8 +88,19 @@ const ProjectForm = () => {
     navigate('/')
   }
 
-  const districts = ['Центр', 'Север', 'Юг', 'Восток', 'Запад']
-  const statuses = ['Строится', 'Сдан', 'Скоро сдача']
+  const districts = [
+    'Ленинский район',
+    'Кировский район',
+    'Первомайский район',
+    'Железнодорожный район',
+    'Советский район',
+    'Октябрьский район',
+    'Ворошиловский район',
+    'Пролетарский район',
+    'Область и другие регионы',
+  ]
+  const types = ['Монолитный', 'Монолитно-кирпичный', 'Кирпичный', 'Панельный']
+  const statuses = ['Сданные', 'Строятся', 'Старт продаж']
 
   return (
     <div className="max-w-4xl">
@@ -130,6 +142,22 @@ const ProjectForm = () => {
                 <option value="">Выберите район</option>
                 {districts.map(district => (
                   <option key={district} value={district}>{district}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Тип ЖК
+              </label>
+              <select
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Выберите тип ЖК</option>
+                {types.map(type => (
+                  <option key={type} value={type}>{type}</option>
                 ))}
               </select>
             </div>
