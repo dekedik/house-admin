@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getProjectById, createProject, updateProject } from '../data/projectsStore'
+import { api } from '../services/api'
 
 const ProjectForm = () => {
   const { id } = useParams()
@@ -33,15 +33,43 @@ const ProjectForm = () => {
 
   useEffect(() => {
     if (isEdit) {
-      const project = getProjectById(id)
-      if (project) {
-        setFormData({
-          ...project,
-          images: project.images || ['', '', ''],
-        })
-      }
+      loadProject()
     }
   }, [id, isEdit])
+
+  const loadProject = async () => {
+    try {
+      const project = await api.getProjectById(id)
+      // Преобразуем images из JSONB если это строка
+      const images = Array.isArray(project.images) ? project.images : (project.images ? JSON.parse(project.images) : [])
+      const features = Array.isArray(project.features) ? project.features : (project.features ? JSON.parse(project.features) : [])
+      
+      setFormData({
+        name: project.name || '',
+        district: project.district || '',
+        type: project.type || '',
+        description: project.description || '',
+        fullDescription: project.full_description || '',
+        price: project.price || '',
+        priceFrom: project.price_from || '',
+        completion: project.completion || '',
+        rooms: project.rooms || '',
+        parking: project.parking || '',
+        status: project.status || '',
+        discount: project.discount || '',
+        image: project.image || '',
+        images: images.length > 0 ? images : ['', '', ''],
+        developer: project.developer || '',
+        floors: project.floors || '',
+        apartments: project.apartments || '',
+        area: project.area || '',
+        features: features || [],
+      })
+    } catch (error) {
+      console.error('Ошибка при загрузке новостройки:', error)
+      alert('Не удалось загрузить новостройку')
+    }
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -52,6 +80,36 @@ const ProjectForm = () => {
     const newImages = [...formData.images]
     newImages[index] = value
     setFormData(prev => ({ ...prev, images: newImages }))
+  }
+
+  const handleFileUpload = (e, fieldName, index = null) => {
+    const file = e.target.files[0]
+    if (file) {
+      // Проверка типа файла
+      if (!file.type.startsWith('image/')) {
+        alert('Пожалуйста, выберите файл изображения')
+        return
+      }
+
+      // Проверка размера файла (макс 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Размер файла не должен превышать 5MB')
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const result = reader.result
+        if (fieldName === 'image') {
+          setFormData(prev => ({ ...prev, image: result }))
+        } else if (index !== null) {
+          const newImages = [...formData.images]
+          newImages[index] = result
+          setFormData(prev => ({ ...prev, images: newImages }))
+        }
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
   const handleAddFeature = () => {
@@ -71,21 +129,42 @@ const ProjectForm = () => {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     const projectData = {
-      ...formData,
+      name: formData.name,
+      district: formData.district,
+      type: formData.type,
+      description: formData.description,
+      fullDescription: formData.fullDescription,
+      price: formData.price,
+      priceFrom: formData.priceFrom,
+      completion: formData.completion,
+      rooms: formData.rooms,
+      parking: formData.parking,
+      status: formData.status,
+      discount: formData.discount || null,
+      image: formData.image,
       images: formData.images.filter(img => img.trim() !== ''),
+      developer: formData.developer,
+      floors: formData.floors,
+      apartments: formData.apartments,
+      area: formData.area,
+      features: formData.features,
     }
 
-    if (isEdit) {
-      updateProject(id, projectData)
-    } else {
-      createProject(projectData)
+    try {
+      if (isEdit) {
+        await api.updateProject(id, projectData)
+      } else {
+        await api.createProject(projectData)
+      }
+      navigate('/')
+    } catch (error) {
+      console.error('Ошибка при сохранении новостройки:', error)
+      alert('Не удалось сохранить новостройку: ' + error.message)
     }
-
-    navigate('/')
   }
 
   const districts = [
@@ -106,7 +185,7 @@ const ProjectForm = () => {
     <div className="max-w-4xl">
       <div className="mb-4 sm:mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-          {isEdit ? 'Редактировать проект' : 'Создать новый проект'}
+          {isEdit ? 'Редактировать новостройку' : 'Создать новую новостройку'}
         </h2>
       </div>
 
@@ -117,7 +196,7 @@ const ProjectForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Название проекта *
+                Название новостройки *
               </label>
               <input
                 type="text"
@@ -363,32 +442,98 @@ const ProjectForm = () => {
         <div>
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Изображения</h3>
           <div className="space-y-4">
+            {/* Главное изображение */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Главное изображение *
               </label>
-              <input
-                type="url"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                required
-                placeholder="https://..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
+              <div className="space-y-2">
+                <input
+                  type="url"
+                  name="image"
+                  value={formData.image}
+                  onChange={handleChange}
+                  placeholder="Или введите URL изображения"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'image')}
+                    className="hidden"
+                    id="main-image-upload"
+                  />
+                  <label
+                    htmlFor="main-image-upload"
+                    className="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition"
+                  >
+                    <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Загрузить изображение
+                  </label>
+                </div>
+                {formData.image && (
+                  <div className="mt-2">
+                    <img
+                      src={formData.image}
+                      alt="Предпросмотр"
+                      className="max-w-full h-48 object-cover rounded-lg border border-gray-300"
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Дополнительные изображения */}
             {formData.images.map((img, index) => (
               <div key={index}>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Дополнительное изображение {index + 1}
                 </label>
-                <input
-                  type="url"
-                  value={img}
-                  onChange={(e) => handleImageChange(index, e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
+                <div className="space-y-2">
+                  <input
+                    type="url"
+                    value={img}
+                    onChange={(e) => handleImageChange(index, e.target.value)}
+                    placeholder="Или введите URL изображения"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'images', index)}
+                      className="hidden"
+                      id={`image-upload-${index}`}
+                    />
+                    <label
+                      htmlFor={`image-upload-${index}`}
+                      className="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition"
+                    >
+                      <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Загрузить изображение
+                    </label>
+                  </div>
+                  {img && (
+                    <div className="mt-2">
+                      <img
+                        src={img}
+                        alt={`Предпросмотр ${index + 1}`}
+                        className="max-w-full h-48 object-cover rounded-lg border border-gray-300"
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -446,7 +591,7 @@ const ProjectForm = () => {
             type="submit"
             className="w-full sm:w-auto px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-medium"
           >
-            {isEdit ? 'Сохранить изменения' : 'Создать проект'}
+            {isEdit ? 'Сохранить изменения' : 'Создать новостройку'}
           </button>
         </div>
       </form>

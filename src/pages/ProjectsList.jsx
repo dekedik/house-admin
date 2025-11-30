@@ -1,26 +1,46 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getAllProjects, deleteProject } from '../data/projectsStore'
+import { api } from '../services/api'
 
 const ProjectsList = () => {
   const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null)
 
   useEffect(() => {
-    setProjects(getAllProjects())
+    loadProjects()
   }, [])
 
-  const handleDelete = (id) => {
-    if (deleteProject(id)) {
-      setProjects(getAllProjects())
+  const loadProjects = async () => {
+    try {
+      setLoading(true)
+      const data = await api.getProjects()
+      setProjects(data)
+      setError(null)
+    } catch (err) {
+      console.error('Ошибка при загрузке новостроек:', err)
+      setError('Не удалось загрузить новостройки')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    try {
+      await api.deleteProject(id)
+      await loadProjects()
       setShowDeleteConfirm(null)
+    } catch (err) {
+      console.error('Ошибка при удалении новостройки:', err)
+      alert('Не удалось удалить новостройку')
     }
   }
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Список проектов</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">📋 Список новостроек</h2>
         <Link
           to="/projects/new"
           className="bg-primary-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-primary-700 transition font-medium flex items-center justify-center space-x-2"
@@ -28,18 +48,32 @@ const ProjectsList = () => {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span>Добавить проект</span>
+          <span>Добавить новостройку</span>
         </Link>
       </div>
 
-      {projects.length === 0 ? (
+      {loading ? (
         <div className="bg-white rounded-lg shadow p-8 sm:p-12 text-center">
-          <p className="text-gray-600 text-lg mb-4">Проекты не найдены</p>
+          <p className="text-gray-600 text-lg">Загрузка новостроек...</p>
+        </div>
+      ) : error ? (
+        <div className="bg-white rounded-lg shadow p-8 sm:p-12 text-center">
+          <p className="text-red-600 text-lg mb-4">{error}</p>
+          <button
+            onClick={loadProjects}
+            className="text-primary-600 hover:text-primary-700 font-medium"
+          >
+            Попробовать снова
+          </button>
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-8 sm:p-12 text-center">
+          <p className="text-gray-600 text-lg mb-4">Новостройки не найдены</p>
           <Link
             to="/projects/new"
             className="text-primary-600 hover:text-primary-700 font-medium"
           >
-            Создать первый проект
+            Создать первую новостройку
           </Link>
         </div>
       ) : (
@@ -175,7 +209,7 @@ const ProjectsList = () => {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Подтверждение удаления</h3>
             <p className="text-gray-600 mb-6">
-              Вы уверены, что хотите удалить этот проект? Это действие нельзя отменить.
+              Вы уверены, что хотите удалить эту новостройку? Это действие нельзя отменить.
             </p>
             <div className="flex flex-col sm:flex-row justify-end gap-3">
               <button

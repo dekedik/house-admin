@@ -1,23 +1,95 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './store/AuthContext'
 import AdminLayout from './components/AdminLayout'
 import ProjectsList from './pages/ProjectsList'
 import ProjectForm from './pages/ProjectForm'
+import Managers from './pages/Managers'
+import Houses from './pages/Houses'
+import Clients from './pages/Clients'
+import Applications from './pages/Applications'
+import Login from './pages/Login'
 
-function App() {
+// Компонент для защищенных маршрутов
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <p className="mt-4 text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" />
+}
+
+// Компонент для публичных маршрутов (логин)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <p className="mt-4 text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return !isAuthenticated ? children : <Navigate to="/" />
+}
+
+function AppRoutes() {
   return (
     <Router>
-      <AdminLayout>
-        <Routes>
-          <Route path="/" element={<ProjectsList />} />
-          <Route path="/projects/new" element={<ProjectForm />} />
-          <Route path="/projects/edit/:id" element={<ProjectForm />} />
-        </Routes>
-      </AdminLayout>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Routes>
+                  <Route path="/" element={<ProjectsList />} />
+                  <Route path="/projects/new" element={<ProjectForm />} />
+                  <Route path="/projects/edit/:id" element={<ProjectForm />} />
+                  <Route path="/houses" element={<Houses />} />
+                  <Route path="/clients" element={<Clients />} />
+                  <Route path="/applications" element={<Applications />} />
+                  <Route path="/managers" element={<Managers />} />
+                </Routes>
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </Router>
   )
 }
 
+function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+  )
+}
+
 export default App
+
 
 
