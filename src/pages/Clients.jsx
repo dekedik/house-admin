@@ -8,6 +8,7 @@ const Clients = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null)
+  const [showApplicationDeleteConfirm, setShowApplicationDeleteConfirm] = useState(null)
   const [showDetailsModal, setShowDetailsModal] = useState(null)
   const [clientApplications, setClientApplications] = useState([])
   const [projects, setProjects] = useState([])
@@ -45,10 +46,14 @@ const Clients = () => {
 
   const handleShowDetails = async (client) => {
     setShowDetailsModal(client)
+    await loadClientApplications(client.id)
+  }
+
+  const loadClientApplications = async (clientId) => {
     setLoadingApplications(true)
     try {
       const [applicationsData, projectsData] = await Promise.all([
-        applicationsApi.getAll({ client_id: client.id }),
+        applicationsApi.getAll({ client_id: clientId }),
         api.getProjects()
       ])
       setClientApplications(applicationsData)
@@ -58,6 +63,20 @@ const Clients = () => {
       setClientApplications([])
     } finally {
       setLoadingApplications(false)
+    }
+  }
+
+  const handleDeleteApplication = async (applicationId) => {
+    try {
+      await applicationsApi.delete(applicationId)
+      // Перезагружаем заявки клиента после удаления
+      if (showDetailsModal) {
+        await loadClientApplications(showDetailsModal.id)
+      }
+      setShowApplicationDeleteConfirm(null)
+    } catch (err) {
+      console.error('Ошибка при удалении заявки:', err)
+      alert('Не удалось удалить заявку')
     }
   }
 
@@ -300,6 +319,15 @@ const Clients = () => {
                           Создана: {new Date(app.created_at).toLocaleString('ru-RU')}
                         </div>
                       </div>
+                      <button
+                        onClick={() => setShowApplicationDeleteConfirm(app.id)}
+                        className="text-red-600 hover:text-red-900 ml-2"
+                        title="Удалить заявку"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 text-sm">
@@ -343,6 +371,32 @@ const Clients = () => {
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
               >
                 Закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Application Delete Confirmation Modal */}
+      {showApplicationDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Подтверждение удаления</h3>
+            <p className="text-gray-600 mb-6">
+              Вы уверены, что хотите удалить эту заявку? Это действие нельзя отменить.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              <button
+                onClick={() => setShowApplicationDeleteConfirm(null)}
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={() => handleDeleteApplication(showApplicationDeleteConfirm)}
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                Удалить
               </button>
             </div>
           </div>
