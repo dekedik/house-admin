@@ -448,14 +448,6 @@ const ProjectForm = () => {
                 Главное изображение *
               </label>
               <div className="space-y-2">
-                <input
-                  type="url"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleChange}
-                  placeholder="Или введите URL изображения"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
                 <div className="relative">
                   <input
                     type="file"
@@ -496,13 +488,6 @@ const ProjectForm = () => {
                   Дополнительное изображение {index + 1}
                 </label>
                 <div className="space-y-2">
-                  <input
-                    type="url"
-                    value={img}
-                    onChange={(e) => handleImageChange(index, e.target.value)}
-                    placeholder="Или введите URL изображения"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
                   <div className="relative">
                     <input
                       type="file"
