@@ -46,7 +46,6 @@ const Login = () => {
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">🔐 Админ-панель</h1>
           <p className="text-gray-600">Войдите в систему для управления новостройками</p>
-          <p className="text-xs text-gray-400 mt-2">Порт: 5174</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -123,9 +122,6 @@ const Login = () => {
 
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>Система управления новостройками</p>
-          <p className="mt-2 text-xs text-gray-400">
-            По умолчанию: main_manager / 7\gU%T$fVRt?pqB
-          </p>
         </div>
       </div>
     </div>
