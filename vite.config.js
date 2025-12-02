@@ -7,27 +7,34 @@ const spaFallback = () => {
   return {
     name: 'spa-fallback',
     configureServer(server) {
+      // Устанавливаем middleware, который будет обрабатывать все маршруты
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split('?')[0] || ''
         
-        // Пропускаем запросы к статическим файлам (с расширениями, кроме .html)
-        const hasFileExtension = /\.\w+$/.test(url)
-        if (hasFileExtension && !url.endsWith('.html')) {
-          return next()
-        }
+        // Список путей, которые нужно пропустить (статические файлы и внутренние пути Vite)
+        const staticPaths = [
+          '/@vite',
+          '/@fs',
+          '/@id',
+          '/@react-refresh',
+          '/node_modules',
+          '/src',
+          '/api',
+        ]
         
-        // Пропускаем запросы к внутренним путям Vite
-        if (url.startsWith('/@') || url.startsWith('/src/') || url.startsWith('/node_modules/')) {
-          return next()
-        }
+        // Проверяем, является ли запрос статическим файлом
+        const isStaticFile = /\.\w+$/.test(url) && !url.endsWith('.html')
         
-        // Пропускаем запросы к API (если они проксируются)
-        if (url.startsWith('/api/')) {
+        // Проверяем, является ли запрос внутренним путем Vite
+        const isViteInternal = staticPaths.some(path => url.startsWith(path))
+        
+        // Если это статический файл или внутренний путь Vite - пропускаем
+        if (isStaticFile || isViteInternal) {
           return next()
         }
         
         // Для всех остальных запросов (включая /login, / и другие SPA маршруты)
-        // возвращаем index.html
+        // перенаправляем на index.html
         if (url !== '/index.html' && !url.endsWith('.html')) {
           req.url = '/index.html'
         }
@@ -39,6 +46,7 @@ const spaFallback = () => {
 }
 
 export default defineConfig({
+  appType: 'spa', // Указываем Vite, что это SPA приложение - автоматически обрабатывает все маршруты
   plugins: [react(), spaFallback()],
   server: {
     host: '0.0.0.0',
