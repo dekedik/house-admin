@@ -2,63 +2,57 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// Плагин для обработки SPA маршрутов - все запросы возвращают index.html
-const spaFallback = () => {
-  return {
-    name: 'spa-fallback',
-    configureServer(server) {
-      // Устанавливаем middleware, который будет обрабатывать все маршруты
-      server.middlewares.use((req, res, next) => {
-        const url = req.url?.split('?')[0] || ''
-        
-        // Список путей, которые нужно пропустить (статические файлы и внутренние пути Vite)
-        const staticPaths = [
-          '/@vite',
-          '/@fs',
-          '/@id',
-          '/@react-refresh',
-          '/node_modules',
-          '/src',
-          '/api',
-        ]
-        
-        // Проверяем, является ли запрос статическим файлом
-        const isStaticFile = /\.\w+$/.test(url) && !url.endsWith('.html')
-        
-        // Проверяем, является ли запрос внутренним путем Vite
-        const isViteInternal = staticPaths.some(path => url.startsWith(path))
-        
-        // Если это статический файл или внутренний путь Vite - пропускаем
-        if (isStaticFile || isViteInternal) {
-          return next()
-        }
-        
-        // Для всех остальных запросов (включая /login, / и другие SPA маршруты)
-        // перенаправляем на index.html
-        if (url !== '/index.html' && !url.endsWith('.html')) {
-          req.url = '/index.html'
-        }
-        
-        next()
-      })
-    },
-  }
-}
-
 export default defineConfig({
   appType: 'spa', // Указываем Vite, что это SPA приложение - автоматически обрабатывает все маршруты
-  plugins: [react(), spaFallback()],
+  plugins: [
+    react(),
+    // Простой плагин для обработки SPA маршрутов
+    {
+      name: 'spa-fallback',
+      configureServer(server) {
+        // Используем return функцию для установки middleware после инициализации
+        return () => {
+          // Устанавливаем middleware, который будет обрабатывать все маршруты
+          server.middlewares.use((req, res, next) => {
+            const url = req.url?.split('?')[0] || ''
+            
+            // Пропускаем запросы к статическим файлам и внутренним путям Vite
+            if (
+              // Внутренние пути Vite
+              url.startsWith('/@') ||
+              url.startsWith('/node_modules/') ||
+              url.startsWith('/src/') ||
+              // API запросы
+              url.startsWith('/api/') ||
+              // Статические файлы (с расширениями, кроме .html)
+              (url.includes('.') && !url.endsWith('.html') && url !== '/')
+            ) {
+              return next()
+            }
+            
+            // Для всех остальных запросов (включая /login, /houses, /clients и т.д.)
+            // перенаправляем на index.html
+            if (url !== '/index.html' && url !== '/') {
+              console.log(`[SPA Fallback] Redirecting ${url} to /index.html`)
+              req.url = '/index.html'
+            }
+            
+            next()
+          })
+        }
+      },
+    },
+  ],
   server: {
     host: '0.0.0.0',
     port: 5174,
-    strictPort: true, // Не использовать другой порт, если 5174 занят
+    strictPort: true,
   },
   preview: {
     port: 5174,
     strictPort: true,
   },
-  root: path.resolve(__dirname, './'), // Явно указываем корневую директорию
-  // Настройка для production build
+  root: path.resolve(__dirname, './'),
   build: {
     rollupOptions: {
       input: {
