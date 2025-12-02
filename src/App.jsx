@@ -1,5 +1,5 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './store/AuthContext'
 import AdminLayout from './components/AdminLayout'
 import ProjectsList from './pages/ProjectsList'
@@ -46,9 +46,31 @@ const PublicRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" />
 }
 
+// Компонент для обработки глобальных редиректов из API
+const AuthRedirectHandler = () => {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const handleAuthRedirect = (event) => {
+      const { path } = event.detail
+      if (path) {
+        navigate(path, { replace: true })
+      }
+    }
+
+    window.addEventListener('auth:redirect', handleAuthRedirect)
+    return () => {
+      window.removeEventListener('auth:redirect', handleAuthRedirect)
+    }
+  }, [navigate])
+
+  return null
+}
+
 function AppRoutes() {
   return (
     <Router>
+      <AuthRedirectHandler />
       <Routes>
         <Route
           path="/login"

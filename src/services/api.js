@@ -41,7 +41,9 @@ const fetchWithAuth = async (url, options = {}) => {
   if (response.status === 401) {
     // Токен недействителен, перенаправляем на страницу входа
     removeToken()
-    window.location.href = '/login'
+    // Используем событие для уведомления о необходимости редиректа
+    // Это позволяет React Router обработать навигацию без перезагрузки страницы
+    window.dispatchEvent(new CustomEvent('auth:redirect', { detail: { path: '/login' } }))
     throw new Error('Не авторизован')
   }
 
