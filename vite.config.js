@@ -3,43 +3,39 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  appType: 'spa', // Указываем Vite, что это SPA приложение - автоматически обрабатывает все маршруты
+  appType: 'spa',
   plugins: [
     react(),
-    // Простой плагин для обработки SPA маршрутов
+    // Плагин для обработки SPA маршрутов
     {
       name: 'spa-fallback',
       configureServer(server) {
-        // Используем return функцию для установки middleware после инициализации
-        return () => {
-          // Устанавливаем middleware, который будет обрабатывать все маршруты
-          server.middlewares.use((req, res, next) => {
-            const url = req.url?.split('?')[0] || ''
-            
-            // Пропускаем запросы к статическим файлам и внутренним путям Vite
-            if (
-              // Внутренние пути Vite
-              url.startsWith('/@') ||
-              url.startsWith('/node_modules/') ||
-              url.startsWith('/src/') ||
-              // API запросы
-              url.startsWith('/api/') ||
-              // Статические файлы (с расширениями, кроме .html)
-              (url.includes('.') && !url.endsWith('.html') && url !== '/')
-            ) {
-              return next()
-            }
-            
-            // Для всех остальных запросов (включая /login, /houses, /clients и т.д.)
-            // перенаправляем на index.html
-            if (url !== '/index.html' && url !== '/') {
-              console.log(`[SPA Fallback] Redirecting ${url} to /index.html`)
-              req.url = '/index.html'
-            }
-            
-            next()
-          })
-        }
+        // Устанавливаем middleware напрямую
+        server.middlewares.use((req, res, next) => {
+          const url = req.url?.split('?')[0] || ''
+          
+          console.log(`[SPA Fallback] Request: ${req.method} ${url}`)
+          
+          // Пропускаем запросы к внутренним путям Vite и статическим файлам
+          if (
+            url.startsWith('/@') ||
+            url.startsWith('/node_modules/') ||
+            url.startsWith('/src/') ||
+            url.startsWith('/api/') ||
+            (url.includes('.') && !url.endsWith('.html') && url !== '/')
+          ) {
+            console.log(`[SPA Fallback] Skipping: ${url}`)
+            return next()
+          }
+          
+          // Для всех остальных запросов перенаправляем на index.html
+          if (url !== '/index.html' && url !== '/') {
+            console.log(`[SPA Fallback] Redirecting ${url} to /index.html`)
+            req.url = '/index.html'
+          }
+          
+          next()
+        })
       },
     },
   ],
