@@ -1,9 +1,10 @@
 import { getAllProjects, getProjectById, createProject, updateProject, deleteProject as deleteProjectFromStore } from '../data/projectsStore'
+import { config } from '../config'
 
 // Флаг для переключения между моковыми данными и реальным API
 const USE_MOCK_DATA = false // Подключен реальный бекенд
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const apiUrl = config.apiUrl
 
 // Получить токен из localStorage
 const getToken = () => {
@@ -40,7 +41,9 @@ const fetchWithAuth = async (url, options = {}) => {
   if (response.status === 401) {
     // Токен недействителен, перенаправляем на страницу входа
     removeToken()
-    window.location.href = '/login'
+    // Используем событие для уведомления о необходимости редиректа
+    // Это позволяет React Router обработать навигацию без перезагрузки страницы
+    window.dispatchEvent(new CustomEvent('auth:redirect', { detail: { path: '/login' } }))
     throw new Error('Не авторизован')
   }
 
@@ -95,7 +98,7 @@ export const api = {
     }
 
     // Реальный API запрос
-    const response = await fetch(`${API_URL}/api/auth/login`, {
+    const response = await fetch(`${apiUrl}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -142,7 +145,7 @@ export const api = {
     }
 
     // Реальный API запрос
-    const response = await fetchWithAuth(`${API_URL}/api/auth/verify`)
+    const response = await fetchWithAuth(`${apiUrl}/auth/verify`)
     if (!response.ok) {
       throw new Error('Токен недействителен')
     }
@@ -160,7 +163,7 @@ export const api = {
     }
 
     // Реальный API запрос
-    const response = await fetchWithAuth(`${API_URL}/api/projects`)
+    const response = await fetchWithAuth(`${apiUrl}/projects`)
     if (!response.ok) {
       throw new Error('Ошибка при загрузке новостроек')
     }
@@ -180,7 +183,7 @@ export const api = {
     }
 
     // Реальный API запрос
-    const response = await fetchWithAuth(`${API_URL}/api/projects/${id}`)
+    const response = await fetchWithAuth(`${apiUrl}/projects/${id}`)
     if (!response.ok) {
       throw new Error('Новостройка не найдена')
     }
@@ -197,7 +200,7 @@ export const api = {
     }
 
     // Реальный API запрос
-    const response = await fetchWithAuth(`${API_URL}/api/projects`, {
+    const response = await fetchWithAuth(`${apiUrl}/projects`, {
       method: 'POST',
       body: JSON.stringify(projectData),
     })
@@ -223,7 +226,7 @@ export const api = {
     }
 
     // Реальный API запрос
-    const response = await fetchWithAuth(`${API_URL}/api/projects/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/projects/${id}`, {
       method: 'PUT',
       body: JSON.stringify(projectData),
     })
@@ -249,7 +252,7 @@ export const api = {
     }
 
     // Реальный API запрос
-    const response = await fetchWithAuth(`${API_URL}/api/projects/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/projects/${id}`, {
       method: 'DELETE',
     })
 

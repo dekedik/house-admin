@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { config } from '../config'
+
+const apiUrl = config.apiUrl
 
 // Получить токен из localStorage
 const getToken = () => {
@@ -38,19 +40,19 @@ const fetchWithAuth = async (url, options = {}) => {
 export const usersApi = {
   // Получить всех пользователей
   async getAll() {
-    const response = await fetchWithAuth(`${API_URL}/api/users`)
+    const response = await fetchWithAuth(`${apiUrl}/users`)
     return response.json()
   },
 
   // Получить пользователя по ID
   async getById(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/users/${id}`)
+    const response = await fetchWithAuth(`${apiUrl}/users/${id}`)
     return response.json()
   },
 
   // Создать пользователя
   async create(userData) {
-    const response = await fetchWithAuth(`${API_URL}/api/users`, {
+    const response = await fetchWithAuth(`${apiUrl}/users`, {
       method: 'POST',
       body: JSON.stringify(userData),
     })
@@ -59,7 +61,7 @@ export const usersApi = {
 
   // Обновить пользователя
   async update(id, userData) {
-    const response = await fetchWithAuth(`${API_URL}/api/users/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(userData),
     })
@@ -68,7 +70,7 @@ export const usersApi = {
 
   // Удалить пользователя
   async delete(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/users/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/users/${id}`, {
       method: 'DELETE',
     })
     return response.json()
@@ -76,7 +78,7 @@ export const usersApi = {
 
   // Сбросить пароль
   async resetPassword(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/users/${id}/reset-password`, {
+    const response = await fetchWithAuth(`${apiUrl}/users/${id}/reset-password`, {
       method: 'POST',
     })
     return response.json()

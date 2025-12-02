@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { config } from '../config'
+
+const apiUrl = config.apiUrl
 
 // Получить токен из localStorage
 const getToken = () => {
@@ -45,7 +47,7 @@ export const housesApi = {
     if (params.search) queryParams.append('search', params.search)
 
     const queryString = queryParams.toString()
-    const url = `${API_URL}/api/houses${queryString ? `?${queryString}` : ''}`
+    const url = `${apiUrl}/houses${queryString ? `?${queryString}` : ''}`
     
     const response = await fetchWithAuth(url)
     return response.json()
@@ -53,13 +55,13 @@ export const housesApi = {
 
   // Получить дом по ID
   async getById(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/houses/${id}`)
+    const response = await fetchWithAuth(`${apiUrl}/houses/${id}`)
     return response.json()
   },
 
   // Создать дом
   async create(houseData) {
-    const response = await fetchWithAuth(`${API_URL}/api/houses`, {
+    const response = await fetchWithAuth(`${apiUrl}/houses`, {
       method: 'POST',
       body: JSON.stringify(houseData),
     })
@@ -68,7 +70,7 @@ export const housesApi = {
 
   // Обновить дом
   async update(id, houseData) {
-    const response = await fetchWithAuth(`${API_URL}/api/houses/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/houses/${id}`, {
       method: 'PUT',
       body: JSON.stringify(houseData),
     })
@@ -77,7 +79,7 @@ export const housesApi = {
 
   // Удалить дом
   async delete(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/houses/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/houses/${id}`, {
       method: 'DELETE',
     })
     return response.json()

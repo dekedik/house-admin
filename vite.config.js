@@ -3,12 +3,28 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
+  appType: 'spa', // Указывает Vite, что это SPA - автоматически обрабатывает все маршруты
   plugins: [react()],
   server: {
     host: '0.0.0.0',
     port: 5174,
-    strictPort: true, // Не использовать другой порт, если 5174 занят
+    strictPort: true,
   },
-  root: path.resolve(__dirname, './'), // Явно указываем корневую директорию
+  preview: {
+    port: 5174,
+    strictPort: true,
+  },
+  root: path.resolve(__dirname, './'),
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      },
+    },
+    // Убеждаемся, что index.html правильно обрабатывается
+    emptyOutDir: true,
+  },
 })
 

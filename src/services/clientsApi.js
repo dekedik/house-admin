@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { config } from '../config'
+
+const apiUrl = config.apiUrl
 
 // Получить токен из localStorage
 const getToken = () => {
@@ -43,7 +45,7 @@ export const clientsApi = {
     if (params.search) queryParams.append('search', params.search)
 
     const queryString = queryParams.toString()
-    const url = `${API_URL}/api/clients${queryString ? `?${queryString}` : ''}`
+    const url = `${apiUrl}/clients${queryString ? `?${queryString}` : ''}`
     
     const response = await fetchWithAuth(url)
     return response.json()
@@ -51,13 +53,13 @@ export const clientsApi = {
 
   // Получить клиента по ID
   async getById(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/clients/${id}`)
+    const response = await fetchWithAuth(`${apiUrl}/clients/${id}`)
     return response.json()
   },
 
   // Создать клиента
   async create(clientData) {
-    const response = await fetchWithAuth(`${API_URL}/api/clients`, {
+    const response = await fetchWithAuth(`${apiUrl}/clients`, {
       method: 'POST',
       body: JSON.stringify(clientData),
     })
@@ -66,7 +68,7 @@ export const clientsApi = {
 
   // Обновить клиента
   async update(id, clientData) {
-    const response = await fetchWithAuth(`${API_URL}/api/clients/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/clients/${id}`, {
       method: 'PUT',
       body: JSON.stringify(clientData),
     })
@@ -75,7 +77,7 @@ export const clientsApi = {
 
   // Удалить клиента
   async delete(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/clients/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/clients/${id}`, {
       method: 'DELETE',
     })
     return response.json()
