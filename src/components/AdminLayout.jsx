@@ -30,9 +30,11 @@ const AdminLayout = ({ children }) => {
         <div className="p-6">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">А</span>
-              </div>
+              <img 
+                src="/photo_5291730524693008647_y.jpg" 
+                alt="Логотип" 
+                className="h-10 w-auto object-contain rounded-lg"
+              />
               <span className="text-xl font-bold">Админ-панель</span>
             </div>
             <button
