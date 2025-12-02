@@ -1,6 +1,6 @@
 import { config } from '../config'
 
-const API_URL = config.apiUrl
+const apiUrl = config.apiUrl
 
 // Получить токен из localStorage
 const getToken = () => {
@@ -49,7 +49,7 @@ export const applicationsApi = {
     if (params.manager_id) queryParams.append('manager_id', params.manager_id)
 
     const queryString = queryParams.toString()
-    const url = `${API_URL}/api/applications${queryString ? `?${queryString}` : ''}`
+    const url = `${apiUrl}/applications${queryString ? `?${queryString}` : ''}`
     
     const response = await fetchWithAuth(url)
     return response.json()
@@ -57,13 +57,13 @@ export const applicationsApi = {
 
   // Получить заявку по ID
   async getById(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/applications/${id}`)
+    const response = await fetchWithAuth(`${apiUrl}/applications/${id}`)
     return response.json()
   },
 
   // Создать заявку
   async create(applicationData) {
-    const response = await fetchWithAuth(`${API_URL}/api/applications`, {
+    const response = await fetchWithAuth(`${apiUrl}/applications`, {
       method: 'POST',
       body: JSON.stringify(applicationData),
     })
@@ -72,7 +72,7 @@ export const applicationsApi = {
 
   // Обновить заявку
   async update(id, applicationData) {
-    const response = await fetchWithAuth(`${API_URL}/api/applications/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/applications/${id}`, {
       method: 'PUT',
       body: JSON.stringify(applicationData),
     })
@@ -81,7 +81,7 @@ export const applicationsApi = {
 
   // Удалить заявку
   async delete(id) {
-    const response = await fetchWithAuth(`${API_URL}/api/applications/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/applications/${id}`, {
       method: 'DELETE',
     })
     return response.json()
