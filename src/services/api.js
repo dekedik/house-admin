@@ -1,9 +1,10 @@
 import { getAllProjects, getProjectById, createProject, updateProject, deleteProject as deleteProjectFromStore } from '../data/projectsStore'
+import { config } from '../config'
 
 // Флаг для переключения между моковыми данными и реальным API
 const USE_MOCK_DATA = false // Подключен реальный бекенд
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const API_URL = config.apiUrl
 
 // Получить токен из localStorage
 const getToken = () => {
