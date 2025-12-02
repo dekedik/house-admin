@@ -16,11 +16,15 @@ export default defineConfig({
   },
   root: path.resolve(__dirname, './'),
   build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
       },
     },
+    // Убеждаемся, что index.html правильно обрабатывается
+    emptyOutDir: true,
   },
 })
 
