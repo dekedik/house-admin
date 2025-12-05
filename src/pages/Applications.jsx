@@ -174,7 +174,19 @@ const Applications = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{getProjectDisplay(app)}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm text-gray-900">{getProjectDisplay(app)}</div>
+                        {(app.project?.id || app.project_id) && (
+                          <a
+                            href={`https://house-client-iota.vercel.app/project/${app.project?.id || app.project_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-900 text-xs font-medium underline"
+                          >
+                            Перейти
+                          </a>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(app.status)}`}>
@@ -230,9 +242,20 @@ const Applications = () => {
                     </span>
                   </div>
                   <div className="space-y-2 mb-4 text-sm">
-                    {(app.project_id || app.project_name) && (
-                      <div>
-                        <span className="text-gray-500">Проект:</span> <span className="text-gray-900">{getProjectDisplay(app)}</span>
+                    {(app.project?.id || app.project_id || app.project_name) && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Проект:</span>
+                        <span className="text-gray-900">{getProjectDisplay(app)}</span>
+                        {(app.project?.id || app.project_id) && (
+                          <a
+                            href={`https://house-client-iota.vercel.app/project/${app.project?.id || app.project_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-900 text-xs font-medium underline"
+                          >
+                            Перейти
+                          </a>
+                        )}
                       </div>
                     )}
                     <div>
@@ -303,7 +326,19 @@ const Applications = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Проект</label>
-                  <div className="text-sm text-gray-900">{getProjectDisplay(showDetailsModal)}</div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="text-sm text-gray-900">{getProjectDisplay(showDetailsModal)}</div>
+                    {(showDetailsModal.project?.id || showDetailsModal.project_id) && (
+                      <a
+                        href={`https://house-client-iota.vercel.app/project/${showDetailsModal.project?.id || showDetailsModal.project_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-900 text-xs font-medium underline"
+                      >
+                        Перейти
+                      </a>
+                    )}
+                  </div>
                   {showDetailsModal.project && (
                     <div className="text-xs text-gray-500 mt-1">
                       {showDetailsModal.project.district && <div>Район: {showDetailsModal.project.district}</div>}
