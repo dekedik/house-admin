@@ -147,7 +147,7 @@ const AdminLayout = ({ children }) => {
                 </span>
               )}
               <a 
-                href="http://localhost:5173" 
+                href="https://house-client-iota.vercel.app" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary-600 hover:text-primary-700 text-sm font-medium hidden sm:inline"
