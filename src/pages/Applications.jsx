@@ -66,20 +66,21 @@ const Applications = () => {
   }
 
   const getProjectDisplay = (app) => {
-    // Если есть project_id, пытаемся найти проект по ID и взять его название
+    // Новая структура: app.project - это объект
+    if (app.project && app.project.name) {
+      return app.project.name
+    }
+    // Старая структура (для обратной совместимости)
     if (app.project_id) {
       const project = projects.find(p => p.id === app.project_id)
       if (project && project.name) {
         return project.name
       }
-      // Если проект не найден, но есть project_name из API, используем его
       if (app.project_name && app.project_name.trim() !== '' && app.project_name !== String(app.project_id)) {
         return app.project_name
       }
-      // Если project_name это просто ID, показываем "Проект #ID"
       return `Проект #${app.project_id}`
     }
-    // Если есть только project_name (без project_id)
     if (app.project_name && app.project_name.trim() !== '') {
       return app.project_name
     }
@@ -167,9 +168,9 @@ const Applications = () => {
                       <div className="text-sm text-gray-900">#{app.id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{app.client_name || '-'}</div>
-                      {app.client_phone && (
-                        <div className="text-sm text-gray-500">{app.client_phone}</div>
+                      <div className="text-sm font-medium text-gray-900">{app.client?.name || app.client_name || '-'}</div>
+                      {(app.client?.phone || app.client_phone) && (
+                        <div className="text-sm text-gray-500">{app.client?.phone || app.client_phone}</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -219,7 +220,10 @@ const Applications = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">Заявка #{app.id}</h3>
-                      <p className="text-sm text-gray-500">{app.client_name || 'Без клиента'}</p>
+                      <p className="text-sm text-gray-500">{app.client?.name || app.client_name || 'Без клиента'}</p>
+                      {(app.client?.phone || app.client_phone) && (
+                        <p className="text-sm text-gray-400">{app.client?.phone || app.client_phone}</p>
+                      )}
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(app.status)}`}>
                       {getStatusLabel(app.status)}
@@ -281,12 +285,12 @@ const Applications = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Клиент</label>
-                  <div className="text-sm text-gray-900">{showDetailsModal.client_name || '-'}</div>
-                  {showDetailsModal.client_phone && (
-                    <div className="text-sm text-gray-500">{showDetailsModal.client_phone}</div>
+                  <div className="text-sm text-gray-900">{showDetailsModal.client?.name || showDetailsModal.client_name || '-'}</div>
+                  {(showDetailsModal.client?.phone || showDetailsModal.client_phone) && (
+                    <div className="text-sm text-gray-500">{showDetailsModal.client?.phone || showDetailsModal.client_phone}</div>
                   )}
-                  {showDetailsModal.client_email && (
-                    <div className="text-sm text-gray-500">{showDetailsModal.client_email}</div>
+                  {(showDetailsModal.client?.email || showDetailsModal.client_email) && (
+                    <div className="text-sm text-gray-500">{showDetailsModal.client?.email || showDetailsModal.client_email}</div>
                   )}
                 </div>
                 
@@ -300,6 +304,12 @@ const Applications = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Проект</label>
                   <div className="text-sm text-gray-900">{getProjectDisplay(showDetailsModal)}</div>
+                  {showDetailsModal.project && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      {showDetailsModal.project.district && <div>Район: {showDetailsModal.project.district}</div>}
+                      {showDetailsModal.project.type && <div>Тип: {showDetailsModal.project.type}</div>}
+                    </div>
+                  )}
                 </div>
                 
                 <div>
@@ -309,7 +319,7 @@ const Applications = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Менеджер</label>
-                  <div className="text-sm text-gray-900">{showDetailsModal.manager_username || '-'}</div>
+                  <div className="text-sm text-gray-900">{showDetailsModal.manager?.username || showDetailsModal.manager_username || '-'}</div>
                 </div>
                 
                 <div>
