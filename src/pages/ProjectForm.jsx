@@ -11,6 +11,7 @@ const ProjectForm = () => {
     name: '',
     district: '',
     type: '',
+    housingClass: '',
     description: '',
     fullDescription: '',
     price: '',
@@ -48,6 +49,7 @@ const ProjectForm = () => {
         name: project.name || '',
         district: project.district || '',
         type: project.type || '',
+        housingClass: project.housing_class || '',
         description: project.description || '',
         fullDescription: project.full_description || '',
         price: project.price || '',
@@ -136,6 +138,7 @@ const ProjectForm = () => {
       name: formData.name,
       district: formData.district,
       type: formData.type,
+      housingClass: formData.housingClass,
       description: formData.description,
       fullDescription: formData.fullDescription,
       price: formData.price,
@@ -179,6 +182,7 @@ const ProjectForm = () => {
     'Область и другие регионы',
   ]
   const types = ['Монолитный', 'Монолитно-кирпичный', 'Кирпичный', 'Панельный']
+  const housingClasses = ['Эконом', 'Комфорт', 'Комфорт+', 'Бизнес']
   const statuses = ['Сданные', 'Строятся', 'Старт продаж']
 
   return (
@@ -237,6 +241,22 @@ const ProjectForm = () => {
                 <option value="">Выберите тип ЖК</option>
                 {types.map(type => (
                   <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Класс жилья
+              </label>
+              <select
+                name="housingClass"
+                value={formData.housingClass}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Выберите класс жилья</option>
+                {housingClasses.map(housingClass => (
+                  <option key={housingClass} value={housingClass}>{housingClass}</option>
                 ))}
               </select>
             </div>
