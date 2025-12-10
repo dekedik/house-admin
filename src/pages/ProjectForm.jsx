@@ -17,17 +17,19 @@ const ProjectForm = () => {
     price: '',
     priceFrom: '',
     completion: '',
-    rooms: '',
     parking: '',
     status: '',
     discount: '',
     image: '',
-    images: ['', '', ''],
+    images: [],
     developer: '',
     floors: '',
     apartments: '',
     area: '',
     features: [],
+    roomsAvailable: [],
+    designTypes: [],
+    paymentTypes: [],
   })
 
   const [newFeature, setNewFeature] = useState('')
@@ -45,6 +47,10 @@ const ProjectForm = () => {
       const images = Array.isArray(project.images) ? project.images : (project.images ? JSON.parse(project.images) : [])
       const features = Array.isArray(project.features) ? project.features : (project.features ? JSON.parse(project.features) : [])
       
+      const roomsAvailable = Array.isArray(project.rooms_available) ? project.rooms_available : (project.rooms_available ? JSON.parse(project.rooms_available) : [])
+      const designTypes = Array.isArray(project.design_types) ? project.design_types : (project.design_types ? JSON.parse(project.design_types) : [])
+      const paymentTypes = Array.isArray(project.payment_types) ? project.payment_types : (project.payment_types ? JSON.parse(project.payment_types) : [])
+      
       setFormData({
         name: project.name || '',
         district: project.district || '',
@@ -55,17 +61,19 @@ const ProjectForm = () => {
         price: project.price || '',
         priceFrom: project.price_from || '',
         completion: project.completion || '',
-        rooms: project.rooms || '',
         parking: project.parking || '',
         status: project.status || '',
         discount: project.discount || '',
         image: project.image || '',
-        images: images.length > 0 ? images : ['', '', ''],
+        images: images.filter(img => img && img.trim() !== ''),
         developer: project.developer || '',
         floors: project.floors || '',
         apartments: project.apartments || '',
         area: project.area || '',
         features: features || [],
+        roomsAvailable: roomsAvailable || [],
+        designTypes: designTypes || [],
+        paymentTypes: paymentTypes || [],
       })
     } catch (error) {
       console.error('Ошибка при загрузке новостройки:', error)
@@ -78,10 +86,17 @@ const ProjectForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleImageChange = (index, value) => {
-    const newImages = [...formData.images]
-    newImages[index] = value
-    setFormData(prev => ({ ...prev, images: newImages }))
+  const handleAddImage = () => {
+    if (formData.images.length < 14) {
+      setFormData(prev => ({ ...prev, images: [...prev.images, ''] }))
+    }
+  }
+
+  const handleRemoveImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }))
   }
 
   const handleFileUpload = (e, fieldName, index = null) => {
@@ -144,7 +159,6 @@ const ProjectForm = () => {
       price: formData.price,
       priceFrom: formData.priceFrom,
       completion: formData.completion,
-      rooms: formData.rooms,
       parking: formData.parking,
       status: formData.status,
       discount: formData.discount || null,
@@ -155,6 +169,9 @@ const ProjectForm = () => {
       apartments: formData.apartments,
       area: formData.area,
       features: formData.features,
+      roomsAvailable: formData.roomsAvailable,
+      designTypes: formData.designTypes,
+      paymentTypes: formData.paymentTypes,
     }
 
     try {
@@ -188,6 +205,19 @@ const ProjectForm = () => {
   const types = ['Монолитный', 'Монолитно-кирпичный', 'Кирпичный', 'Панельный']
   const housingClasses = ['Эконом', 'Комфорт', 'Комфорт+', 'Бизнес', 'Премиум']
   const statuses = ['Сданные', 'Строятся', 'Старт продаж']
+  const roomsAvailableOptions = ['Студия', '1к', '2к', '3к', '4к']
+  const designTypesOptions = ['Без отделки', 'Предчистовая', 'С ремонтом']
+  const paymentTypesOptions = ['100% оплата', 'Рассрочка', 'Ипотека', 'Военная ипотека', 'Субсидированная ипотека', 'Траншевая ипотека']
+
+  const handleMultiSelectChange = (fieldName, value) => {
+    setFormData(prev => {
+      const currentValues = prev[fieldName] || []
+      const newValues = currentValues.includes(value)
+        ? currentValues.filter(v => v !== value)
+        : [...currentValues, value]
+      return { ...prev, [fieldName]: newValues }
+    })
+  }
 
   return (
     <div className="max-w-4xl">
@@ -347,20 +377,6 @@ const ProjectForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Комнаты *
-              </label>
-              <input
-                type="text"
-                name="rooms"
-                value={formData.rooms}
-                onChange={handleChange}
-                required
-                placeholder="1-4 комн."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Парковка *
               </label>
               <input
@@ -460,6 +476,90 @@ const ProjectForm = () => {
               />
             </div>
           </div>
+
+          {/* Новые поля с множественным выбором */}
+          <div className="mt-6 space-y-4">
+            {/* Доступные комнаты */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Доступные типы комнат
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {roomsAvailableOptions.map(option => (
+                  <label
+                    key={option}
+                    className={`inline-flex items-center px-4 py-2 rounded-lg border-2 cursor-pointer transition ${
+                      formData.roomsAvailable.includes(option)
+                        ? 'bg-primary-100 border-primary-500 text-primary-700'
+                        : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.roomsAvailable.includes(option)}
+                      onChange={() => handleMultiSelectChange('roomsAvailable', option)}
+                      className="hidden"
+                    />
+                    <span className="font-medium">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Типы отделки */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Типы отделки
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {designTypesOptions.map(option => (
+                  <label
+                    key={option}
+                    className={`inline-flex items-center px-4 py-2 rounded-lg border-2 cursor-pointer transition ${
+                      formData.designTypes.includes(option)
+                        ? 'bg-primary-100 border-primary-500 text-primary-700'
+                        : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.designTypes.includes(option)}
+                      onChange={() => handleMultiSelectChange('designTypes', option)}
+                      className="hidden"
+                    />
+                    <span className="font-medium">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Типы оплаты */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Типы оплаты
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {paymentTypesOptions.map(option => (
+                  <label
+                    key={option}
+                    className={`inline-flex items-center px-4 py-2 rounded-lg border-2 cursor-pointer transition ${
+                      formData.paymentTypes.includes(option)
+                        ? 'bg-primary-100 border-primary-500 text-primary-700'
+                        : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.paymentTypes.includes(option)}
+                      onChange={() => handleMultiSelectChange('paymentTypes', option)}
+                      className="hidden"
+                    />
+                    <span className="font-medium">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Изображения */}
@@ -495,7 +595,7 @@ const ProjectForm = () => {
                     <img
                       src={formData.image}
                       alt="Предпросмотр"
-                      className="max-w-full h-48 object-cover rounded-lg border border-gray-300"
+                      className="max-w-full h-48 object-contain rounded-lg border border-gray-300"
                       onError={(e) => {
                         e.target.style.display = 'none'
                       }}
@@ -506,45 +606,84 @@ const ProjectForm = () => {
             </div>
 
             {/* Дополнительные изображения */}
-            {formData.images.map((img, index) => (
-              <div key={index}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Дополнительное изображение {index + 1}
-                </label>
-                <div className="space-y-2">
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, 'images', index)}
-                      className="hidden"
-                      id={`image-upload-${index}`}
-                    />
-                    <label
-                      htmlFor={`image-upload-${index}`}
-                      className="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition"
-                    >
-                      <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      Загрузить изображение
-                    </label>
-                  </div>
-                  {img && (
-                    <div className="mt-2">
-                      <img
-                        src={img}
-                        alt={`Предпросмотр ${index + 1}`}
-                        className="max-w-full h-48 object-cover rounded-lg border border-gray-300"
-                        onError={(e) => {
-                          e.target.style.display = 'none'
-                        }}
-                      />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Дополнительные изображения (до 14 штук)
+              </label>
+              
+              <div className="space-y-3">
+                {formData.images.map((img, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-600">
+                        Изображение {index + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="text-red-600 hover:text-red-800 transition"
+                        title="Удалить изображение"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
-                  )}
-                </div>
+                    
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'images', index)}
+                        className="hidden"
+                        id={`image-upload-${index}`}
+                      />
+                      <label
+                        htmlFor={`image-upload-${index}`}
+                        className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition"
+                      >
+                        <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {img ? 'Изменить изображение' : 'Загрузить изображение'}
+                      </label>
+                      
+                      {img && (
+                        <div className="mt-2">
+                          <img
+                            src={img}
+                            alt={`Предпросмотр ${index + 1}`}
+                            className="w-full max-h-48 object-contain rounded-lg border border-gray-300"
+                            onError={(e) => {
+                              e.target.style.display = 'none'
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                {formData.images.length < 14 && (
+                  <button
+                    type="button"
+                    onClick={handleAddImage}
+                    className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary-500 hover:text-primary-600 transition flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Добавить изображение ({formData.images.length}/14)
+                  </button>
+                )}
+                
+                {formData.images.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Нажмите кнопку выше, чтобы добавить дополнительные изображения
+                  </p>
+                )}
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
