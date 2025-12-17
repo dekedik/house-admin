@@ -5,31 +5,58 @@ import { api } from '../services/api'
 const ProjectsList = () => {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null)
+  const [hasMore, setHasMore] = useState(true)
+  const [offset, setOffset] = useState(0)
+  const LIMIT = 10
 
   useEffect(() => {
-    loadProjects()
+    loadProjects(true)
   }, [])
 
-  const loadProjects = async () => {
+  const loadProjects = async (reset = false) => {
     try {
-      setLoading(true)
-      const data = await api.getProjects()
-      setProjects(data)
+      if (reset) {
+        setLoading(true)
+        setOffset(0)
+      } else {
+        setLoadingMore(true)
+      }
+      
+      const currentOffset = reset ? 0 : offset
+      const data = await api.getProjects({ limit: LIMIT, offset: currentOffset })
+      
+      if (reset) {
+        setProjects(data)
+      } else {
+        setProjects(prev => [...prev, ...data])
+      }
+      
+      // Проверяем, есть ли еще проекты для загрузки
+      setHasMore(data.length === LIMIT)
+      setOffset(currentOffset + data.length)
       setError(null)
     } catch (err) {
       console.error('Ошибка при загрузке новостроек:', err)
       setError('Не удалось загрузить новостройки')
     } finally {
       setLoading(false)
+      setLoadingMore(false)
+    }
+  }
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadProjects(false)
     }
   }
 
   const handleDelete = async (id) => {
     try {
       await api.deleteProject(id)
-      await loadProjects()
+      await loadProjects(true) // Перезагружаем с начала
       setShowDeleteConfirm(null)
     } catch (err) {
       console.error('Ошибка при удалении новостройки:', err)
@@ -200,6 +227,19 @@ const ProjectsList = () => {
               </div>
             ))}
           </div>
+          
+          {/* Кнопка "Загрузить еще" */}
+          {hasMore && !loading && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loadingMore ? 'Загрузка...' : 'Загрузить еще'}
+              </button>
+            </div>
+          )}
         </>
       )}
 

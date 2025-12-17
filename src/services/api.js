@@ -154,7 +154,7 @@ export const api = {
   },
 
   // Новостройки
-  async getProjects() {
+  async getProjects(params = {}) {
     if (USE_MOCK_DATA) {
       // Имитация задержки сети
       await new Promise(resolve => setTimeout(resolve, 300))
@@ -162,8 +162,15 @@ export const api = {
       return getAllProjects()
     }
 
-    // Реальный API запрос
-    const response = await fetchWithAuth(`${apiUrl}/projects`)
+    // Реальный API запрос с поддержкой limit и offset
+    const queryParams = new URLSearchParams()
+    if (params.limit) queryParams.append('limit', params.limit)
+    if (params.offset) queryParams.append('offset', params.offset)
+    
+    const queryString = queryParams.toString()
+    const url = `${apiUrl}/projects${queryString ? `?${queryString}` : ''}`
+    
+    const response = await fetchWithAuth(url)
     if (!response.ok) {
       throw new Error('Ошибка при загрузке новостроек')
     }
