@@ -175,7 +175,7 @@ const Applications = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <div className="text-sm text-gray-900">{getProjectDisplay(app)}</div>
+                      <div className="text-sm text-gray-900">{getProjectDisplay(app)}</div>
                         {(app.project?.id || app.project_id) && (
                           <a
                             href={`https://house-client-iota.vercel.app/project/${app.project?.id || app.project_id}`}
@@ -327,7 +327,7 @@ const Applications = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Проект</label>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <div className="text-sm text-gray-900">{getProjectDisplay(showDetailsModal)}</div>
+                  <div className="text-sm text-gray-900">{getProjectDisplay(showDetailsModal)}</div>
                     {(showDetailsModal.project?.id || showDetailsModal.project_id) && (
                       <a
                         href={`https://house-client-iota.vercel.app/project/${showDetailsModal.project?.id || showDetailsModal.project_id}`}

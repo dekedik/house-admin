@@ -163,15 +163,15 @@ const ProjectForm = () => {
       status: formData.status,
       discount: formData.discount || null,
       image: formData.image,
-      images: formData.images.filter(img => img.trim() !== ''),
+      images: formData.images.filter(img => img && img.trim() !== ''),
       developer: formData.developer,
       floors: formData.floors,
       apartments: formData.apartments,
       area: formData.area,
       features: formData.features,
-      roomsAvailable: formData.roomsAvailable,
-      designTypes: formData.designTypes,
-      paymentTypes: formData.paymentTypes,
+      rooms_available: formData.roomsAvailable,
+      design_types: formData.designTypes,
+      payment_types: formData.paymentTypes,
     }
 
     try {
