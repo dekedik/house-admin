@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
+import { getImageUrl } from '../utils/imageUtils'
 
 const ProjectForm = () => {
   const { id } = useParams()
@@ -593,7 +594,7 @@ const ProjectForm = () => {
                 {formData.image && (
                   <div className="mt-2">
                     <img
-                      src={formData.image}
+                      src={getImageUrl(formData.image)}
                       alt="Предпросмотр"
                       className="max-w-full h-48 object-contain rounded-lg border border-gray-300"
                       onError={(e) => {
@@ -651,7 +652,7 @@ const ProjectForm = () => {
                       {img && (
                         <div className="mt-2">
                           <img
-                            src={img}
+                            src={getImageUrl(img)}
                             alt={`Предпросмотр ${index + 1}`}
                             className="w-full max-h-48 object-contain rounded-lg border border-gray-300"
                             onError={(e) => {
