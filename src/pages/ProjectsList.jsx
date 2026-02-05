@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../services/api'
+import { getImageUrl } from '../utils/imageUtils'
 
 const ProjectsList = () => {
   const [projects, setProjects] = useState([])
@@ -8,35 +9,86 @@ const ProjectsList = () => {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null)
-  const [hasMore, setHasMore] = useState(true)
-  const [offset, setOffset] = useState(0)
-  const LIMIT = 10
+  const [pagination, setPagination] = useState({
+    offset: 0,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  })
+  const observerTarget = useRef(null)
 
   useEffect(() => {
-    loadProjects(true)
+    loadProjects(0, true)
   }, [])
 
-  const loadProjects = async (reset = false) => {
+  // Infinite scroll: отслеживание прокрутки
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && pagination.hasNextPage && !loadingMore && !loading) {
+          loadMoreProjects()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current)
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current)
+      }
+    }
+  }, [pagination.hasNextPage, loadingMore, loading])
+
+  const loadProjects = async (offset = 0, reset = false) => {
     try {
       if (reset) {
         setLoading(true)
-        setOffset(0)
       } else {
         setLoadingMore(true)
       }
+      const limit = 10 // Фиксированный лимит
+      const result = await api.getProjects({ offset, limit })
       
-      const currentOffset = reset ? 0 : offset
-      const data = await api.getProjects({ limit: LIMIT, offset: currentOffset })
-      
-      if (reset) {
-        setProjects(data)
+      // Поддержка как нового формата (с пагинацией), так и старого (массив)
+      if (result.data && result.pagination) {
+        if (reset) {
+          setProjects(result.data)
+        } else {
+          setProjects(prev => [...prev, ...result.data])
+        }
+        // Убеждаемся, что offset всегда число
+        const paginationOffset = typeof result.pagination.offset === 'number' && !isNaN(result.pagination.offset)
+          ? result.pagination.offset
+          : (reset ? 0 : (projects.length || 0))
+        setPagination({
+          ...result.pagination,
+          offset: paginationOffset
+        })
+      } else if (Array.isArray(result)) {
+        if (reset) {
+          setProjects(result)
+        } else {
+          setProjects(prev => [...prev, ...result])
+        }
+        setPagination({
+          offset: result.length,
+          limit: result.length,
+          total: result.length,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPrevPage: false
+        })
       } else {
-        setProjects(prev => [...prev, ...data])
+        if (reset) {
+          setProjects([])
+        }
       }
-      
-      // Проверяем, есть ли еще проекты для загрузки
-      setHasMore(data.length === LIMIT)
-      setOffset(currentOffset + data.length)
       setError(null)
     } catch (err) {
       console.error('Ошибка при загрузке новостроек:', err)
@@ -47,16 +99,25 @@ const ProjectsList = () => {
     }
   }
 
-  const loadMore = () => {
-    if (!loadingMore && hasMore) {
-      loadProjects(false)
+  const loadMoreProjects = useCallback(() => {
+    if (pagination.hasNextPage && !loadingMore && !loading) {
+      // Используем offset из pagination или вычисляем из количества загруженных проектов
+      const currentOffset = (typeof pagination.offset === 'number' && !isNaN(pagination.offset))
+        ? pagination.offset
+        : projects.length || 0
+      const nextOffset = currentOffset + (pagination.limit || 10)
+      if (!isNaN(nextOffset) && nextOffset >= 0) {
+        loadProjects(nextOffset, false)
+      }
     }
-  }
+  }, [pagination, loadingMore, loading, projects.length])
+
 
   const handleDelete = async (id) => {
     try {
       await api.deleteProject(id)
-      await loadProjects(true) // Перезагружаем с начала
+      // Перезагружаем с начала (reset)
+      await loadProjects(0, true)
       setShowDeleteConfirm(null)
     } catch (err) {
       console.error('Ошибка при удалении новостройки:', err)
@@ -87,7 +148,7 @@ const ProjectsList = () => {
         <div className="bg-white rounded-lg shadow p-8 sm:p-12 text-center">
           <p className="text-red-600 text-lg mb-4">{error}</p>
           <button
-            onClick={loadProjects}
+            onClick={() => loadProjects(0, true)}
             className="text-primary-600 hover:text-primary-700 font-medium"
           >
             Попробовать снова
@@ -105,6 +166,7 @@ const ProjectsList = () => {
         </div>
       ) : (
         <>
+
           {/* Desktop Table View */}
           <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
@@ -135,7 +197,7 @@ const ProjectsList = () => {
                   <tr key={project.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <img
-                        src={project.image}
+                        src={getImageUrl(project.image)}
                         alt={project.name}
                         className="h-16 w-24 object-cover rounded"
                       />
@@ -188,7 +250,7 @@ const ProjectsList = () => {
                 <div className="p-4">
                   <div className="flex items-start space-x-4 mb-4">
                     <img
-                      src={project.image}
+                      src={getImageUrl(project.image)}
                       alt={project.name}
                       className="h-20 w-28 object-cover rounded flex-shrink-0"
                     />
@@ -227,17 +289,24 @@ const ProjectsList = () => {
               </div>
             ))}
           </div>
-          
-          {/* Кнопка "Загрузить еще" */}
-          {hasMore && !loading && (
-            <div className="mt-6 text-center">
-              <button
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loadingMore ? 'Загрузка...' : 'Загрузить еще'}
-              </button>
+
+          {/* Индикатор загрузки при infinite scroll */}
+          {loadingMore && (
+            <div className="mt-4 text-center py-4">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              <p className="text-gray-600 mt-2">Загрузка...</p>
+            </div>
+          )}
+
+          {/* Элемент для отслеживания прокрутки (infinite scroll) */}
+          {pagination.hasNextPage && !loadingMore && (
+            <div ref={observerTarget} className="h-10"></div>
+          )}
+
+          {/* Информация о количестве загруженных проектов */}
+          {projects.length > 0 && (
+            <div className="mt-4 text-center text-sm text-gray-600 bg-white rounded-lg shadow p-4">
+              Показано {projects.length} из {pagination.total} новостроек
             </div>
           )}
         </>
@@ -273,4 +342,5 @@ const ProjectsList = () => {
 }
 
 export default ProjectsList
+
 

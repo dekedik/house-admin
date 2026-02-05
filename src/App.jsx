@@ -6,6 +6,9 @@ import ProjectsList from './pages/ProjectsList'
 import ProjectForm from './pages/ProjectForm'
 import Managers from './pages/Managers'
 import Houses from './pages/Houses'
+import HouseForm from './pages/HouseForm'
+import Packages from './pages/Packages'
+import PackageForm from './pages/PackageForm'
 import Clients from './pages/Clients'
 import Applications from './pages/Applications'
 import Login from './pages/Login'
@@ -90,6 +93,11 @@ function AppRoutes() {
                   <Route path="/projects/new" element={<ProjectForm />} />
                   <Route path="/projects/edit/:id" element={<ProjectForm />} />
                   <Route path="/houses" element={<Houses />} />
+                  <Route path="/houses/new" element={<HouseForm />} />
+                  <Route path="/houses/edit/:id" element={<HouseForm />} />
+                  <Route path="/packages" element={<Packages />} />
+                  <Route path="/packages/new" element={<PackageForm />} />
+                  <Route path="/packages/edit/:id" element={<PackageForm />} />
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/applications" element={<Applications />} />
                   <Route path="/managers" element={<Managers />} />

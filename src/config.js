@@ -1,5 +1,5 @@
 // Конфигурация приложения
 export const config = {
-  apiUrl: import.meta.env.API_URL || 'https://admin-doman-horizont.ru/api',
+  apiUrl: import.meta.env.API_URL || 'http://localhost:3001/api',
 }
 

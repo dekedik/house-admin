@@ -38,53 +38,46 @@ const fetchWithAuth = async (url, options = {}) => {
   return response
 }
 
-export const housesApi = {
-  // Получить все дома
-  async getAll(params = {}, offset = 0, limit = 10) {
+export const packagesApi = {
+  // Получить все пакеты
+  async getAll(offset = 0, limit = 10) {
     const queryParams = new URLSearchParams()
-    if (params.status) queryParams.append('status', params.status)
-    if (params.search) queryParams.append('search', params.search)
     queryParams.append('offset', offset.toString())
     queryParams.append('limit', limit.toString())
-
-    const queryString = queryParams.toString()
-    const url = `${apiUrl}/houses?${queryString}`
-    
-    const response = await fetchWithAuth(url)
+    const response = await fetchWithAuth(`${apiUrl}/packages?${queryParams.toString()}`)
     return response.json()
   },
 
-  // Получить дом по ID
+  // Получить пакет по ID
   async getById(id) {
-    const response = await fetchWithAuth(`${apiUrl}/houses/${id}`)
+    const response = await fetchWithAuth(`${apiUrl}/packages/${id}`)
     return response.json()
   },
 
-  // Создать дом
-  async create(houseData) {
-    const response = await fetchWithAuth(`${apiUrl}/houses`, {
+  // Создать пакет
+  async create(packageData) {
+    const response = await fetchWithAuth(`${apiUrl}/packages`, {
       method: 'POST',
-      body: JSON.stringify(houseData),
+      body: JSON.stringify(packageData),
     })
     return response.json()
   },
 
-  // Обновить дом
-  async update(id, houseData) {
-    const response = await fetchWithAuth(`${apiUrl}/houses/${id}`, {
+  // Обновить пакет
+  async update(id, packageData) {
+    const response = await fetchWithAuth(`${apiUrl}/packages/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(houseData),
+      body: JSON.stringify(packageData),
     })
     return response.json()
   },
 
-  // Удалить дом
+  // Удалить пакет
   async delete(id) {
-    const response = await fetchWithAuth(`${apiUrl}/houses/${id}`, {
+    const response = await fetchWithAuth(`${apiUrl}/packages/${id}`, {
       method: 'DELETE',
     })
     return response.json()
   },
 }
-
 

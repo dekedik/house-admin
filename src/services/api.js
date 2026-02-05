@@ -159,7 +159,26 @@ export const api = {
       // Имитация задержки сети
       await new Promise(resolve => setTimeout(resolve, 300))
       
-      return getAllProjects()
+      const offset = params.offset || 0
+      const limit = params.limit || 10
+      const allProjects = getAllProjects()
+      const startIndex = offset
+      const endIndex = startIndex + limit
+      const paginatedProjects = allProjects.slice(startIndex, endIndex)
+      const page = Math.floor(offset / limit) + 1
+      
+      return {
+        data: paginatedProjects,
+        pagination: {
+          page,
+          limit,
+          offset,
+          total: allProjects.length,
+          totalPages: Math.ceil(allProjects.length / limit),
+          hasNextPage: endIndex < allProjects.length,
+          hasPrevPage: offset > 0
+        }
+      }
     }
 
     // Реальный API запрос с поддержкой limit и offset
@@ -174,7 +193,25 @@ export const api = {
     if (!response.ok) {
       throw new Error('Ошибка при загрузке новостроек')
     }
-    return response.json()
+    const result = await response.json()
+    
+    // Если API возвращает массив (старый формат), преобразуем в новый формат
+    if (Array.isArray(result)) {
+      return {
+        data: result,
+        pagination: {
+          page: 1,
+          limit: result.length,
+          offset: 0,
+          total: result.length,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPrevPage: false
+        }
+      }
+    }
+    
+    return result
   },
 
   async getProjectById(id) {

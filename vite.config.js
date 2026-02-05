@@ -15,6 +15,9 @@ export default defineConfig({
     strictPort: true,
   },
   root: path.resolve(__dirname, './'),
+  define: {
+    'import.meta.env.API_URL': JSON.stringify(process.env.API_URL || process.env.VITE_API_URL || ''),
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

@@ -52,7 +52,7 @@ const AdminLayout = ({ children }) => {
               to="/"
               onClick={() => setIsMobileMenuOpen(false)}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                location.pathname === '/' 
+                location.pathname === '/' || location.pathname.startsWith('/projects')
                   ? 'bg-primary-600 text-white' 
                   : 'text-gray-300 hover:bg-gray-800'
               }`}
@@ -66,7 +66,7 @@ const AdminLayout = ({ children }) => {
               to="/houses"
               onClick={() => setIsMobileMenuOpen(false)}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                location.pathname === '/houses' 
+                location.pathname === '/houses' || location.pathname.startsWith('/houses/')
                   ? 'bg-primary-600 text-white' 
                   : 'text-gray-300 hover:bg-gray-800'
               }`}
