@@ -106,7 +106,7 @@ const Packages = () => {
                       </button>
                     </div>
                   </div>
-                  {pkg.thumbnail && (
+                  {pkg.thumbnail && getImageUrl(pkg.thumbnail) && (
                     <div className="mb-4">
                       <img
                         src={getImageUrl(pkg.thumbnail)}
@@ -148,7 +148,7 @@ const Packages = () => {
                       <p className="text-sm text-gray-500">ID: {pkg.package_id}</p>
                     </div>
                   </div>
-                  {pkg.thumbnail && (
+                  {pkg.thumbnail && getImageUrl(pkg.thumbnail) && (
                     <div className="mb-4">
                       <img
                         src={getImageUrl(pkg.thumbnail)}
